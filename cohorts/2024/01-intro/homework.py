@@ -85,6 +85,17 @@ def search(index_name, search_query):
 
     return response
 
+def ask_openai(role, prompt, model="gpt-3.5-turbo"):
+    response = client.chat.completions.create(
+        model=model,
+        messages=[
+            {"role": "system", "content": role},
+            {"role": "user", "content": prompt}
+        ]
+    )
+    answer = response.choices[0].message.content
+    return answer
+
 def main():
     """
     Main function to fetch and process data.
@@ -102,6 +113,25 @@ def main():
     # print(response)
 
     user_question = "How do I execute a command in a running docker container?"
+    course_name = "machine-learning-zoomcamp"
+
+    search_query = {
+        "query": {
+            "bool": {
+                "must": {
+                    "multi_match": {
+                        "query": user_question,
+                        "fields": ["question^4", "text"],
+                        "type": "best_fields"
+                    }
+                }
+            }
+        }
+    }
+
+    # response = search(index_name, search_query)
+    # print(response)
+
     course_name = "machine-learning-zoomcamp"
 
     search_query = {
@@ -125,7 +155,30 @@ def main():
     }
 
     response = search(index_name, search_query)
-    print(response)
+    print(type(response))
+    print(len(response))
+
+    role =  """
+    You're a course teaching assistant.
+    Answer the user QUESTION based on CONTEXT - the documents retrieved from our FAQ database.
+    Don't use other information outside of the provided CONTEXT.  
+    """.strip()
+
+    context_template = """
+    Q: {question}
+    A: {text}
+    """.strip()
+
+    prompt_template = """
+    You're a course teaching assistant. Answer the QUESTION based on the CONTEXT from the FAQ database.
+    Use only the facts from the CONTEXT when answering the QUESTION.
+
+    QUESTION: {question}
+
+    CONTEXT:
+    {context}
+    """.strip()
+
 
 
 if __name__ == "__main__":
