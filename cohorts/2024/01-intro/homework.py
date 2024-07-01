@@ -70,30 +70,10 @@ def index_documents(documents, index_name):
         es.index(index=index_name, document=doc)
 
 
-def search(index_name, user_question):
+def search(index_name, search_query):
 
     es = Elasticsearch("http://localhost:9200")
     es.info()
-
-    search_query = {
-        "size": 3,
-        "query": {
-            "bool": {
-                "must": {
-                    "multi_match": {
-                        "query": user_question,
-                        "fields": ["question^4", "text"],
-                        "type": "best_fields"
-                    }
-                },
-                "filter": {
-                    "term": {
-                        "course": "machine-learning-zoomcamp"
-                    }
-                }
-            }
-        }
-    }
 
     response = es.search(index=index_name, body=search_query)
 
@@ -122,7 +102,29 @@ def main():
     # print(response)
 
     user_question = "How do I execute a command in a running docker container?"
-    response = search(index_name, user_question)
+    course_name = "machine-learning-zoomcamp"
+
+    search_query = {
+        "size": 3,
+        "query": {
+            "bool": {
+                "must": {
+                    "multi_match": {
+                        "query": user_question,
+                        "fields": ["question^4", "text"],
+                        "type": "best_fields"
+                    }
+                },
+                "filter": {
+                    "term": {
+                        "course": course_name
+                    }
+                }
+            }
+        }
+    }
+
+    response = search(index_name, search_query)
     print(response)
 
 
