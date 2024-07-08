@@ -1,6 +1,7 @@
 import requests
 from elasticsearch import Elasticsearch
 from tqdm.auto import tqdm
+import tiktoken
 
 
 def get_data(url):
@@ -59,6 +60,8 @@ def create_index(index_name):
             }
         }
     }
+
+    # TODO if index exists then skip or return a response index exists
     response = es.indices.create(index=index_name, body=index_settings)
     return response
 
@@ -84,6 +87,53 @@ def search(index_name, search_query):
         print(f"Answer: {doc['text'][:60]}...\n")
 
     return response
+
+def retrieve_documents(query, index_name="course-questions", max_results=3):
+    es = Elasticsearch("http://localhost:9200")
+    
+    search_query = {
+        "size": max_results,
+        "query": {
+            "bool": {
+                "must": {
+                    "multi_match": {
+                        "query": query,
+                        "fields": ["question^3", "text", "section"],
+                        "type": "best_fields"
+                    }
+                },
+                "filter": {
+                    "term": {
+                        "course": "data-engineering-zoomcamp"
+                    }
+                }
+            }
+        }
+    }
+    
+    response = es.search(index=index_name, body=search_query)
+    documents = [hit['_source'] for hit in response['hits']['hits']]
+    return documents
+
+def build_context(documents):
+    context = ""
+
+    for doc in documents:
+        doc_str = f"Section: {doc['section']}\nQuestion: {doc['question']}\nAnswer: {doc['text']}\n\n"
+        context += doc_str
+    
+    context = context.strip()
+    return context
+
+def build_prompt(user_question, documents):
+    context = build_context(documents)
+    return f"""
+    QUESTION: {user_question}
+
+    CONTEXT:
+
+    {context}
+    """.strip()
 
 def ask_openai(role, prompt, model="gpt-3.5-turbo"):
     response = client.chat.completions.create(
@@ -129,8 +179,8 @@ def main():
         }
     }
 
-    # response = search(index_name, search_query)
-    # print(response)
+    response = search(index_name, search_query)
+    print(response)
 
     course_name = "machine-learning-zoomcamp"
 
@@ -158,26 +208,46 @@ def main():
     print(type(response))
     print(len(response))
 
-    role =  """
-    You're a course teaching assistant.
-    Answer the user QUESTION based on CONTEXT - the documents retrieved from our FAQ database.
-    Don't use other information outside of the provided CONTEXT.  
-    """.strip()
+    # for hit in response['hits']['hits']:
+    #     doc = hit['_source']
+    #     print(f"Section: {doc['section']}\nQuestion: {doc['question']}\nAnswer: {doc['text']}\n\n")
+
+    documents = [hit['_source'] for hit in response['hits']['hits']]
 
     context_template = """
     Q: {question}
     A: {text}
     """.strip()
 
-    prompt_template = """
-    You're a course teaching assistant. Answer the QUESTION based on the CONTEXT from the FAQ database.
-    Use only the facts from the CONTEXT when answering the QUESTION.
+    context = ""
 
-    QUESTION: {question}
+    for doc in documents:
+        doc_str = f"\nQ: {doc['question']}\nA: {doc['text']}".strip()
+        context += doc_str + "\n"
 
-    CONTEXT:
-    {context}
+    context = context.strip()
+    print(context)
+
+    role = """
+    You're a course teaching assistant.
+    Answer the user QUESTION based on CONTEXT - the documents retrieved from our FAQ database.
+    Don't use other information outside of the provided CONTEXT.  
     """.strip()
+
+    question = user_question
+
+    prompt = f"You're a course teaching assistant. Answer the QUESTION based on the CONTEXT from the FAQ database.\nUse only the facts from the CONTEXT when answering the QUESTION.\n\nQUESTION: {question}\nCONTEXT:\n{context}".strip()
+
+    print(len(prompt))
+
+    encoding = tiktoken.encoding_for_model("gpt-4o")
+    encoded_prompt = encoding.encode(prompt)
+    print(len(encoded_prompt))
+    #decoded_prompt = encoding.decode_single_token_bytes(63482)
+    # print(len(decoded_prompt))
+
+
+    
 
 
 
