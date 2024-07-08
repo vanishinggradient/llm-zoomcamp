@@ -73,7 +73,7 @@ work locally, you only need to change a few lines of code.
   <img src="https://markdown-videos-api.jorgenkh.no/youtube/HObjFso2UJE">
 </a>
 
-[Open AI Alternatives](open-ai-alternatives.md)
+[Open AI Alternatives](../awesome-llms.md#openai-api-alternatives)
 
 
 ## 1.5 Cleaned RAG flow
@@ -106,6 +106,19 @@ docker run -it \
     -e "discovery.type=single-node" \
     -e "xpack.security.enabled=false" \
     docker.elastic.co/elasticsearch/elasticsearch:8.4.3
+```
+
+If the previous command doesn't work (i.e. you see "error pulling image configuration"), try to run ElasticSearch directly from Docker Hub:
+
+```bash
+docker run -it \
+    --rm \
+    --name elasticsearch \
+    -p 9200:9200 \
+    -p 9300:9300 \
+    -e "discovery.type=single-node" \
+    -e "xpack.security.enabled=false" \
+    elasticsearch:8.4.3
 ```
 
 Index settings:
@@ -166,7 +179,7 @@ More information [here](../cohorts/2024/01-intro/homework.md).
 
 * [Notes by slavaheroes](https://github.com/slavaheroes/llm-zoomcamp/blob/homeworks/01-intro/notes.md)
 * [Notes by Pham Nguyen Hung](https://hung.bearblog.dev/llm-zoomcamp-1-rag/)
-* [Notes by dimzachar](https://github.com/dimzachar/llm_zoomcamp/tree/master/notes)
+* [Notes by dimzachar](https://github.com/dimzachar/llm_zoomcamp/blob/master/notes/01-intro/README.md)
 * [Notes by Olawale Ogundeji](https://github.com/presiZHai/LLM-Zoomcamp/blob/main/01-intro/notes.md)
 * [Notes by Uchechukwu](https://medium.com/@njokuuchechi/an-intro-to-large-language-models-llms-0c51c09abe10)
 * [Notes by Kamal](https://github.com/mk-hassan/llm-zoomcamp/blob/main/Module-1%3A%20Introduction%20to%20LLMs%20and%20RAG/README.md)
