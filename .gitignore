@@ -4,3 +4,4 @@ __pycache__/
 .vscode
 ollama_files
 .venv
+.envrc
