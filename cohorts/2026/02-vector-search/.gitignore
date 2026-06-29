@@ -1,0 +1,8 @@
+models/
+homework_executed.ipynb
+main.py
+README.md
+.venv/
+__pycache__/
+.ipynb_checkpoints/
+*.pyc
