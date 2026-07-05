@@ -61,7 +61,7 @@ tasks:
   - id: english_brevity
     type: io.kestra.plugin.ai.agent.AIAgent
     prompt: |
-      Generate exactly 1 sentence English summary of the following:
+      Generate exactly 3 sentences English summary of the following:
       "{{ outputs.multilingual_agent.textOutput }}"
 
   - id: log_token_usage
