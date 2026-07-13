@@ -226,3 +226,5 @@ models/
 
 # uv local Python version pin
 .python-version
+
+.db
