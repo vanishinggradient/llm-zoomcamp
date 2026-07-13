@@ -218,3 +218,11 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+*.onnx
+
+# Downloaded ML models
+models/
+
+# uv local Python version pin
+.python-version
